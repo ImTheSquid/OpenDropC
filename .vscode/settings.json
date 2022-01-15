@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "ifaddrs.h": "c",
+        "socket.h": "c",
+        "unistd.h": "c",
+        "limits.h": "c"
+    }
+}
