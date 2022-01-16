@@ -173,5 +173,6 @@ int opendrop_browser_start(opendrop_browser *browser, opendrop_service_add_cb se
 };
 
 void opendrop_browser_stop(opendrop_browser *browser) {
+    browser->avahi_browser = NULL;
     avahi_service_browser_free(browser->avahi_browser);
 };
