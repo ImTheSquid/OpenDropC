@@ -21,7 +21,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install Dependencies
-      run: sudo apt-get install libssl-dev libavahi-common-dev libavahi-client-dev libcurl4-openssl-dev build-essential -y
+      run: sudo apt-get install libssl-dev libavahi-common-dev libavahi-client-dev libcurl4-openssl-dev gcc-11 g++-11 -y
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
