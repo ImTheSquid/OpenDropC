@@ -118,7 +118,7 @@ void resolve_callback(
         (*browser->browser_status)(browser, OPENDROP_BROWSER_ERROR, browser->status_userdata);
         break;
 
-    case AVAHI_RESOLVER_FOUND:
+    case AVAHI_RESOLVER_FOUND: ;
         opendrop_service service;
         memcpy(service.address, address->data.ipv6.address, 16);
         service.name = name;
