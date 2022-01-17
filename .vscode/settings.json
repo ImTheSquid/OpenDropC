@@ -9,6 +9,7 @@
         "stdbool.h": "c",
         "curl.h": "c",
         "config_private.h": "c",
-        "pem.h": "c"
+        "pem.h": "c",
+        "easy.h": "c"
     }
 }
