@@ -28,6 +28,7 @@ add_library(OpenDropC SHARED
 )
 
 set_target_properties(OpenDropC PROPERTIES PUBLIC_HEADER include/browser.h)
+set_target_properties(OpenDropC PROPERTIES C_STANDARD 11)
 
 target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl)
 
@@ -37,5 +38,6 @@ add_executable(OpenDropCTest
 )
 
 target_link_libraries(OpenDropCTest PRIVATE OpenDropC)
+set_target_properties(OpenDropCTest PROPERTIES C_STANDARD 11)
 
 add_test(Browser OpenDropCTest browser)

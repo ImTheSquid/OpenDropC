@@ -5,8 +5,6 @@
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
-#include <curl/curl.h>
-#include <curl/easy.h>
 #include "config_private.h"
 #include "../include/config.h"
 
