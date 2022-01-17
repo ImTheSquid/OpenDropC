@@ -5,6 +5,7 @@
         "unistd.h": "c",
         "limits.h": "c",
         "stdint.h": "c",
-        "error.h": "c"
+        "error.h": "c",
+        "stdbool.h": "c"
     }
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "config.h"
 
 typedef struct opendrop_server_s opendrop_server;

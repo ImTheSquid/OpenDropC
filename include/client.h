@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -17,7 +19,7 @@ typedef struct opendrop_client_data_s {
 // - target_port: The port to attempt to connect to
 // - config: OpenDrop config instance
 // Returns: 0 on success, >0 on error
-int opendrop_client_new(opendrop_client *client, const char *target_address, uint16_t target_port, const opendrop_config *config);
+int opendrop_client_new(opendrop_client **client, const char *target_address, uint16_t target_port, const opendrop_config *config);
 
 // Frees OpenDrop client
 // Args:

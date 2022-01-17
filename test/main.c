@@ -4,6 +4,7 @@
 #include "../include/browser.h"
 
 int test_browser();
+int test_server();
 
 int main(int argc, char **argv) {
     if (argc == 1) {
@@ -13,11 +14,11 @@ int main(int argc, char **argv) {
 
     if (!strcmp(argv[1], "browser")) {
         return test_browser();
-    } else if (!strcmp(argv[1], "client")) {
-
+    } else if (!strcmp(argv[1], "server")) {
+        return test_server();
     }
 
-    return 0;
+    return 2;
 }
 
 /*
@@ -61,9 +62,9 @@ int test_browser() {
 }
 
 /*
-CLIENT TESTING
+SERVER TESTING
 */
 
-int test_client() {
+int test_server() {
     return 0;
 }

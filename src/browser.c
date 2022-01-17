@@ -29,7 +29,7 @@ struct opendrop_browser_s {
 AvahiThreadedPoll *avahi_loop = NULL;
 size_t watch_refs = 0;
 
-int last_init_error = 0;
+int last_browser_init_error = 0;
 
 // Handles Avahi client events
 void client_callback(AvahiClient *client, AvahiClientState state, void *userdata) {
@@ -43,26 +43,24 @@ void client_callback(AvahiClient *client, AvahiClientState state, void *userdata
 
 int opendrop_browser_new(opendrop_browser **browser, const char *interface) {
     // Create Avahi main loop
-    if (!watch_refs) {
+    if (!watch_refs++) {
         avahi_loop = avahi_threaded_poll_new();
         if (!avahi_loop || avahi_threaded_poll_start(avahi_loop)) {
-            last_init_error = 1;
+            last_browser_init_error = 1;
             return 1;
         }
     }
-    watch_refs++;
 
     // Allocate browser struct
-    *browser = (opendrop_browser*) malloc(sizeof(opendrop_browser));
-    if (!browser) {
-        last_init_error = 2;
+    if (!(*browser = (opendrop_browser*) malloc(sizeof(opendrop_browser)))) {
+        last_browser_init_error = 2;
         return 1;
     }
 
     // Find interface index
     if (!((*browser)->interface_idx = if_nametoindex(interface))) {
         opendrop_browser_free(*browser);
-        last_init_error = 3;
+        last_browser_init_error = 3;
         return 1;
     }
 
@@ -72,7 +70,7 @@ int opendrop_browser_new(opendrop_browser **browser, const char *interface) {
     if (!((*browser)->avahi_client = avahi_client_new(avahi_threaded_poll_get(avahi_loop), 0, client_callback, *browser, &err))) {
         opendrop_browser_free(*browser);
         avahi_threaded_poll_unlock(avahi_loop);
-        last_init_error = err;
+        last_browser_init_error = err;
         return 1;
     }
     avahi_threaded_poll_unlock(avahi_loop);
@@ -82,13 +80,11 @@ int opendrop_browser_new(opendrop_browser **browser, const char *interface) {
 
 void opendrop_browser_free(opendrop_browser *browser) {
     if (browser) {
-        avahi_threaded_poll_lock(avahi_loop);
-
         if (browser->avahi_client) {
+            avahi_threaded_poll_lock(avahi_loop);
             avahi_client_free(browser->avahi_client);
+            avahi_threaded_poll_unlock(avahi_loop);
         }
-
-        avahi_threaded_poll_unlock(avahi_loop);
         
         free(browser);
 
@@ -211,7 +207,7 @@ void opendrop_browser_set_remove_service_callback(opendrop_browser *browser, ope
 }
 
 int opendrop_browser_init_errno() {
-    return last_init_error;
+    return last_browser_init_error;
 }
 
 int opendrop_browser_errno(const opendrop_browser *browser) {
