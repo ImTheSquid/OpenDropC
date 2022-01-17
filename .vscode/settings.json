@@ -3,6 +3,8 @@
         "ifaddrs.h": "c",
         "socket.h": "c",
         "unistd.h": "c",
-        "limits.h": "c"
+        "limits.h": "c",
+        "stdint.h": "c",
+        "error.h": "c"
     }
 }
