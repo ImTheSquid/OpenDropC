@@ -139,6 +139,13 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
     FILE *key_file = tmpfile();
     PEM_write_PrivateKey(key_file, pkey, EVP_des_ede3_cbc(), "openDropKey", 11, NULL, NULL);
     fflush(key_file);
+    FILE *cert_file = tmpfile();
+    PEM_write_X509(cert_file, x509);
+    fflush(cert_file);
+
+    X509_free(x509);
+    RSA_free(rsa);
+    EVP_PKEY_free(pkey);
 
     long key_file_size = ftell(key_file);
     rewind(key_file);
@@ -146,13 +153,13 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
     config_unwrap->key_data->len = key_file_size;
     config_unwrap->key_data->flags = CURL_BLOB_NOCOPY;
     config_unwrap->key_data->data = malloc(key_file_size);
-    fread(config_unwrap->key_data->data, 1, key_file_size, key_file);
+    if (fread(config_unwrap->key_data->data, 1, key_file_size, key_file) != key_file_size) {
+        opendrop_config_free(config_unwrap);
+        last_config_init_error = 4;
+        return 1;
+    }
 
     fclose(key_file);
-
-    FILE *cert_file = tmpfile();
-    PEM_write_X509(cert_file, x509);
-    fflush(cert_file);
 
     long cert_file_size = ftell(cert_file);
     rewind(cert_file);
@@ -160,11 +167,11 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
     config_unwrap->cert_data->len = cert_file_size;
     config_unwrap->cert_data->flags = CURL_BLOB_NOCOPY;
     config_unwrap->cert_data->data = malloc(cert_file_size);
-    fread(config_unwrap->cert_data->data, 1, cert_file_size, cert_file);
-
-    X509_free(x509);
-    RSA_free(rsa);
-    EVP_PKEY_free(pkey);
+    if (fread(config_unwrap->cert_data->data, 1, cert_file_size, cert_file) != cert_file_size) {
+        opendrop_config_free(config_unwrap);
+        last_config_init_error = 4;
+        return 1;
+    }
 
     return 0;
 }
