@@ -1,7 +1,6 @@
 #include <memory.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <curl/curl.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
