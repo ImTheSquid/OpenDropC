@@ -1,6 +1,7 @@
 #pragma once
 
 #include <curl/curl.h>
+#include <curl/easy.h>
 #include <stdint.h>
 
 struct opendrop_config_s {
