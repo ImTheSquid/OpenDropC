@@ -14,7 +14,7 @@ add_library(OpenDropC SHARED
 )
 
 set_target_properties(OpenDropC PROPERTIES PUBLIC_HEADER include/browser.h)
-target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl)
+target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl) # curl is very broken on Ubuntu 20.04, build from source
 
 # Testing
 add_executable(OpenDropCTest
