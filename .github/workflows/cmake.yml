@@ -24,7 +24,7 @@ jobs:
       run: sudo apt-get install libssl-dev libavahi-common-dev libavahi-client-dev tar make wget -y
 
     - name: Install Latest Curl
-      run: wget -O ./curl.tar.gz https://curl.se/download/curl-7.81.0.tar.gz && mkdir curl && tar -zxf curl.tar.gz --directory ./curl && cd curl && ./configure && make && make install && cd ..
+      run: wget -O ./curl.tar.gz https://curl.se/download/curl-7.81.0.tar.gz && tar -zxf curl.tar.gz && cd curl && ./configure && make && make install && cd ..
 
     - name: Symbolic Link Curl Libraries # Required otherwise can't find Curl headers
       run: sudo bash -c "sudo ln -s /usr/include/*-linux-gnu/curl /usr/include/curl"
