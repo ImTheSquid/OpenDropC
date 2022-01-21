@@ -10,6 +10,7 @@
         "curl.h": "c",
         "config_private.h": "c",
         "pem.h": "c",
-        "easy.h": "c"
+        "easy.h": "c",
+        "rsa.h": "c"
     }
 }
