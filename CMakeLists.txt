@@ -24,3 +24,4 @@ add_executable(OpenDropCTest
 target_link_libraries(OpenDropCTest PRIVATE OpenDropC)
 
 add_test(Browser OpenDropCTest browser)
+add_test(Config OpenDropCTest config)

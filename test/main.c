@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "../include/browser.h"
+#include "../include/config.h"
 
 int test_browser();
 int test_server();
@@ -16,6 +17,8 @@ int main(int argc, char **argv) {
         return test_browser();
     } else if (!strcmp(argv[1], "server")) {
         return test_server();
+    } else if (!strcmp(argv[1], "config")) {
+        return test_config();
     }
 
     return 2;
@@ -66,5 +69,22 @@ SERVER TESTING
 */
 
 int test_server() {
+    return 0;
+}
+
+/*
+CONFIG TESTING
+*/
+
+int test_config() {
+    opendrop_config *config;
+    unsigned char array[13] = {0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21};
+    if (opendrop_config_new(&config, array, 13)) {
+        printf("CREATE ERROR %i: %s", opendrop_config_init_errno(), opendrop_config_strerror(opendrop_config_init_errno()));
+        return 1;
+    }
+
+    opendrop_config_free(config);
+
     return 0;
 }

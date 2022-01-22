@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
@@ -32,7 +33,9 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
         return 1;
     }
 
-    opendrop_config *config_unwrap = *config;
+#define config_unwrap (*config)
+    // This causes very weird problems for some reason
+    // opendrop_config *config_unwrap = *config;
 
     if (!(config_unwrap = (opendrop_config*) malloc(sizeof(opendrop_config)))) {
         last_config_init_error = 2;
@@ -67,7 +70,7 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
 
     config_unwrap->computer_model = (char*) malloc(strlen("OpenDrop") + 1);
     strcpy(config_unwrap->computer_model, "OpenDrop");
-    config_unwrap->computer_name = (char*) malloc(HOST_NAME_MAX);
+    config_unwrap->computer_name = (char*) malloc(HOST_NAME_MAX + 1);
     strcpy(config_unwrap->computer_name, config_unwrap->host_name);
 
     config_unwrap->server_port = 8771;
@@ -97,11 +100,24 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
         return 1;
     }
 
-    RSA *rsa;
-    if (RSA_generate_key_ex(rsa, 2048, NULL, NULL)) {
+    BIGNUM *big = BN_new();
+    BN_generate_prime_ex(big, 2048, true, NULL, NULL, NULL);
+    if (!big) {
         EVP_PKEY_free(pkey);
         opendrop_config_free(config_unwrap);
-        last_config_init_error = 4;
+        last_config_init_error = 5;
+        return 1;
+    }
+
+    RSA *rsa = RSA_new();
+    if (!(rsa && RSA_generate_key_ex(rsa, 2048, big, NULL))) {
+        if (rsa) {
+            RSA_free(rsa);
+        }
+        BN_free(big);
+        EVP_PKEY_free(pkey);
+        opendrop_config_free(config_unwrap);
+        last_config_init_error = 6;
         return 1;
     }
 
@@ -112,7 +128,7 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
         RSA_free(rsa);
         EVP_PKEY_free(pkey);
         opendrop_config_free(config_unwrap);
-        last_config_init_error = 4;
+        last_config_init_error = 7;
         return 1;
     }
 
@@ -143,18 +159,19 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
     fflush(cert_file);
 
     X509_free(x509);
-    RSA_free(rsa);
+    BN_free(big);
     EVP_PKEY_free(pkey);
 
     long key_file_size = ftell(key_file);
     rewind(key_file);
 
+    config_unwrap->key_data = (struct curl_blob*) malloc(sizeof(struct curl_blob));
     config_unwrap->key_data->len = key_file_size;
     config_unwrap->key_data->flags = CURL_BLOB_NOCOPY;
     config_unwrap->key_data->data = malloc(key_file_size);
     if (fread(config_unwrap->key_data->data, 1, key_file_size, key_file) != key_file_size) {
         opendrop_config_free(config_unwrap);
-        last_config_init_error = 4;
+        last_config_init_error = 8;
         return 1;
     }
 
@@ -163,12 +180,13 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
     long cert_file_size = ftell(cert_file);
     rewind(cert_file);
 
+    config_unwrap->cert_data = (struct curl_blob*) malloc(sizeof(struct curl_blob));
     config_unwrap->cert_data->len = cert_file_size;
     config_unwrap->cert_data->flags = CURL_BLOB_NOCOPY;
     config_unwrap->cert_data->data = malloc(cert_file_size);
     if (fread(config_unwrap->cert_data->data, 1, cert_file_size, cert_file) != cert_file_size) {
         opendrop_config_free(config_unwrap);
-        last_config_init_error = 4;
+        last_config_init_error = 9;
         return 1;
     }
 
@@ -303,7 +321,11 @@ const char *opendrop_config_strerror(int code) {
     case 1: return "No root CA or no root CA length given.";
     case 2: return "Failed to allocate memory.";
     case 3: return "Failed to get host name.";
-    case 4: return "Failed to generate default certificate.";
+    case 4: return "Failed to generate PKEY for certificate.";
+    case 5: return "Failed to generate BIGNUM for certificate.";
+    case 6: return "Failed to generate RSA for certificate.";
+    case 7: return "Failed to generate X509 for certificate.";
+    case 8: return "Failed to read generated certificate.";
     }
 
     return "Unknown error.";
