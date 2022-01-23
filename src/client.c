@@ -33,6 +33,14 @@ int opendrop_client_new(opendrop_client **client, const char *target_address, ui
         return 1;
     }
 
+    if (curl_easy_setopt((*client)->curl, CURLOPT_INTERFACE, config->interface) || 
+        curl_easy_setopt((*client)->curl, CURLOPT_PORT, target_port) || 
+        curl_easy_setopt((*client)->curl, CURLOPT_URL, target_address)) {
+        opendrop_client_free(*client);
+        last_client_init_error = -3;
+        return 1;
+    }
+
     (*client)->config = config;
 
     return 0;
@@ -50,4 +58,12 @@ void opendrop_client_free(opendrop_client *client) {
             curl_global_cleanup();
         }
     }
+}
+
+int opendrop_client_ask(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len, bool is_url, const unsigned char *icon, size_t icon_len) {
+    
+}
+
+int opendrop_client_send(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len) {
+
 }
