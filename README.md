@@ -4,4 +4,4 @@ A reimplementation of [OpenDrop](https://github.com/seemoo-lab/opendrop) in C, m
 
 ## Requirements
 
-Avahi headers and libraries are required for compilation.
+libavahi, libcurl, and libxml2 are required for compilation.

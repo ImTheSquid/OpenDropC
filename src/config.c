@@ -190,6 +190,8 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
         return 1;
     }
 
+#undef config_unrwap
+
     return 0;
 }
 

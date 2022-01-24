@@ -26,18 +26,17 @@ int opendrop_client_new(opendrop_client **client, const char *target_address, ui
 // - client: OpenDrop client
 void opendrop_client_free(opendrop_client *client);
 
-// Sends ASK request to server to see if ready to accept
+// Sends ASK request to server to see if ready to accept file or URL
 // Args:
 // - client: OpenDrop client
 // - data_arr: An array of pointers to client data that will be sent
 // - data_arr_len: Number of datas to be sent
 // - is_url: If set to true, only the first item in data_arr will be sent (as a URL)
 // - icon: Optional icon to send to AirDrop system, must be image in JPEG2000 form
-// - icon_len: Size of icon
 // Returns: 0 on success, >0 on error
-int opendrop_client_ask(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len, bool is_url, const unsigned char *icon, size_t icon_len);
+int opendrop_client_ask(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len, bool is_url, const opendrop_client_data *icon);
 
-// Attempts to send file
+// Attempts to send file, DO NOT USE TO SEND A URL
 // Args:
 // - client: OpenDrop client
 // - data_arr: An array of pointers to client data that will be sent

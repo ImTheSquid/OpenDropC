@@ -6,6 +6,7 @@
 
 int test_browser();
 int test_server();
+int test_config();
 
 int main(int argc, char **argv) {
     if (argc == 1) {
