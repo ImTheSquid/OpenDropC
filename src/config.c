@@ -80,7 +80,9 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
         srand_called = true;
     }
     
-    sprintf(config_unwrap->service_id, "%.6x", rand());
+    for(uint8_t i = 0; i < 6; i++) {
+        sprintf(config_unwrap->service_id + i, "%x", rand() % 16);
+    }
 
     config_unwrap->interface = (char*) malloc(strlen("awdl0") + 1);
     strcpy(config_unwrap->interface, "awdl0");

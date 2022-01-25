@@ -16,7 +16,7 @@ add_library(OpenDropC SHARED
 target_include_directories(OpenDropC PRIVATE "/usr/include/libxml2")
 
 set_target_properties(OpenDropC PROPERTIES PUBLIC_HEADER include/browser.h)
-target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl xml2) # curl is very broken on Ubuntu 20.04, build from source
+target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl xml2)
 
 # Testing
 add_executable(OpenDropCTest
