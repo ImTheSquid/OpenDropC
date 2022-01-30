@@ -14,6 +14,7 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
 void opendrop_config_free(opendrop_config *config);
 
 // Setter functions
+// All string-based setters must have null-terminated strings as arguments
 // Returns 0 on success, 1 if malloc failed
 void opendrop_config_set_host_name(opendrop_config *config, const char *host_name);
 
@@ -33,7 +34,7 @@ int opendrop_config_set_phone(opendrop_config *config, const char *phone);
 
 int opendrop_config_set_cert(opendrop_config *config, const unsigned char *cert_data, size_t cert_data_len, const unsigned char *key_data, size_t key_data_len);
 
-int opendrop_config_set_record_data(opendrop_config *config, void *record_data, size_t record_data_len);
+int opendrop_config_set_record_data(opendrop_config *config, const char *record_data);
 
 // Error functions
 int opendrop_config_init_errno();

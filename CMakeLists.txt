@@ -13,10 +13,8 @@ add_library(OpenDropC SHARED
     src/utils.c
 )
 
-target_include_directories(OpenDropC PRIVATE "/usr/include/libxml2")
-
 set_target_properties(OpenDropC PROPERTIES PUBLIC_HEADER include/browser.h)
-target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl xml2)
+target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl plist-2.0)
 
 # Testing
 add_executable(OpenDropCTest

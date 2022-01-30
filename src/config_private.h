@@ -24,5 +24,5 @@ struct opendrop_config_s {
     struct curl_blob *cert_data;
     struct curl_blob *key_data;
 
-    struct curl_blob *record_data;
+    char *record_data;
 };

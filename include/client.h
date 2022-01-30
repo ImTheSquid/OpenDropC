@@ -26,6 +26,13 @@ int opendrop_client_new(opendrop_client **client, const char *target_address, ui
 // - client: OpenDrop client
 void opendrop_client_free(opendrop_client *client);
 
+// Sends DISCOVER request to server to show record data
+// Args:
+// - client: OpenDrop client
+// - receiver_name: Receiver name, allocated and populated if discoverable, not automatically freed
+// Returns: 0 on success, >0 on error
+int opendrop_client_discover(opendrop_client *client, char **receiver_name);
+
 // Sends ASK request to server to see if ready to accept file or URL
 // Args:
 // - client: OpenDrop client

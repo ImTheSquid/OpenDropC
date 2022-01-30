@@ -297,22 +297,12 @@ int opendrop_config_set_cert(opendrop_config *config, const unsigned char *cert_
     return 0;
 }
 
-int opendrop_config_set_record_data(opendrop_config *config, void *record_data, size_t record_data_len) {
-    if (!config->record_data) {
-        if (!(config->record_data = (struct curl_blob*) malloc(sizeof(struct curl_blob)))) {
-            return 1;
-        }
-
-        config->record_data->flags = CURL_BLOB_NOCOPY;
-    }
-
-    if (!(config->record_data->data = realloc(config->record_data->data, record_data_len))) {
+int opendrop_config_set_record_data(opendrop_config *config, const char *record_data) {
+    if (!(config->record_data = (char*) realloc(config->record_data, strlen(record_data) + 1))) {
         return 1;
     }
 
-    config->record_data->len = record_data_len;
-    memcpy(config->record_data->data, record_data, record_data_len);
-
+    strcpy(config->record_data, record_data);
     return 0;
 }
 
