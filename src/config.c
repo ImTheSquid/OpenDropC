@@ -42,6 +42,8 @@ int opendrop_config_new(opendrop_config **config, const unsigned char *root_ca, 
         return 1;
     }
 
+    memset(config_unwrap, 0, sizeof(opendrop_config));
+
     if (!(config_unwrap->root_ca = (struct curl_blob*) malloc(sizeof(struct curl_blob)))) {
         opendrop_config_free(config_unwrap);
         last_config_init_error = 2;

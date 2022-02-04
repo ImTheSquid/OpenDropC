@@ -57,6 +57,8 @@ int opendrop_browser_new(opendrop_browser **browser, const char *interface) {
         return 1;
     }
 
+    memset(*browser, 0, sizeof(opendrop_browser));
+
     // Find interface index
     if (!((*browser)->interface_idx = if_nametoindex(interface))) {
         opendrop_browser_free(*browser);
@@ -68,8 +70,8 @@ int opendrop_browser_new(opendrop_browser **browser, const char *interface) {
     avahi_threaded_poll_lock(avahi_loop);
     int err;
     if (!((*browser)->avahi_client = avahi_client_new(avahi_threaded_poll_get(avahi_loop), 0, client_callback, *browser, &err))) {
-        opendrop_browser_free(*browser);
         avahi_threaded_poll_unlock(avahi_loop);
+        opendrop_browser_free(*browser);
         last_browser_init_error = err;
         return 1;
     }
@@ -80,6 +82,10 @@ int opendrop_browser_new(opendrop_browser **browser, const char *interface) {
 
 void opendrop_browser_free(opendrop_browser *browser) {
     if (browser) {
+        if (browser->avahi_browser) {
+            avahi_service_browser_free(browser->avahi_browser);
+        }
+
         if (browser->avahi_client) {
             avahi_threaded_poll_lock(avahi_loop);
             avahi_client_free(browser->avahi_client);

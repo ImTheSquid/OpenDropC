@@ -33,6 +33,8 @@ int opendrop_client_new(opendrop_client **client, const char *target_address, ui
         return 1;
     }
 
+    memset(*client, 0, sizeof(opendrop_client));
+
     if(!((*client)->curl = curl_easy_init())) {
         opendrop_client_free(*client);
         last_client_init_error = -2;
