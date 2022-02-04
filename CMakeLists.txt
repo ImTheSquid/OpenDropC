@@ -16,6 +16,13 @@ add_library(OpenDropC SHARED
 set_target_properties(OpenDropC PROPERTIES PUBLIC_HEADER include/browser.h)
 target_link_libraries(OpenDropC PRIVATE avahi-common avahi-client curl ssl plist-2.0)
 
+# CLI
+add_executable(OpenDropCLI
+  src/cli.c
+)
+
+target_link_libraries(OpenDropCLI PRIVATE OpenDropC)
+
 # Testing
 add_executable(OpenDropCTest
   test/main.c

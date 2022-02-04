@@ -6,6 +6,8 @@
 #include "../include/client.h"
 #include "config_private.h"
 
+size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
+
 struct opendrop_client_s {
     CURL *curl;
     char *latest_response;
@@ -46,7 +48,9 @@ int opendrop_client_new(opendrop_client **client, const char *target_address, ui
         curl_easy_setopt(curl_handle, CURLOPT_URL, target_address) ||
         curl_easy_setopt(curl_handle, CURLOPT_SSLCERT_BLOB, config->cert_data) ||
         curl_easy_setopt(curl_handle, CURLOPT_CAINFO_BLOB, config->root_ca) ||
-        curl_easy_setopt(curl_handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2)) {
+        curl_easy_setopt(curl_handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2) ||
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_callback) ||
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, *client)) {
         opendrop_client_free(*client);
         last_client_init_error = -3;
         return 1;
@@ -120,6 +124,7 @@ int opendrop_client_discover(opendrop_client *client, char **receiver_name) {
     buf[len] = 0;
 
     free(client->latest_response);
+    client->latest_response = NULL;
     client->latest_response_len = 0;
     if (curl_easy_perform(client->curl)) {
         ret = 1;
