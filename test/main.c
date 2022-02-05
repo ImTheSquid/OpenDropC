@@ -33,7 +33,7 @@ void browser_add_service(opendrop_browser* b, const opendrop_service* s, void* u
 
 }
 
-void browser_remove_service(opendrop_browser* b, const char*  name, const char* type, const char* domain, void* userdata) {
+void browser_remove_service(opendrop_browser* b, const char* name, const char* type, const char* domain, void* userdata) {
 
 }
 

@@ -76,8 +76,33 @@ void int_handler(int val) {
         opendrop_browser_free(browser);
         browser = NULL;
     }
+}
 
-    raise(SIGUSR1);
+void browser_add_service(opendrop_browser* b, const opendrop_service* s, void* userdata) {
+    printf("Service Added:\nNAME: %s\nHOST NAME: %s\nADDRESS: %s\nPORT: %u\nTYPE: %s\nDOMAIN: %s\n", s->name, s->host_name, s->address, s->port, s->type, s->domain);
+}
+
+void browser_remove_service(opendrop_browser* b, const char* name, const char* type, const char* domain, void* userdata) {
+    printf("Service Removed:\nNAME: %s\nTYPE: %s\nDOMAIN: %s\n", name, type, domain);
+}
+
+void browser_status(opendrop_browser* b, opendrop_browser_status s, void* userdata) {
+    printf("Status Change: ");
+    switch (s) {
+        case OPENDROP_BROWSER_CACHE_EMPTY:
+            printf("Cache empty\n");
+            break;
+        case OPENDROP_BROWSER_DONE:
+            printf("All done, there probably won't be anything new for a while, stopping...\n");
+            opendrop_browser_free(browser);
+            browser = NULL;
+            break;
+        case OPENDROP_BROWSER_ERROR:
+            printf("Error: %s\n", opendrop_browser_strerror(opendrop_browser_errno(browser)));
+            opendrop_browser_free(browser);
+            browser = NULL;
+            break;
+    }
 }
 
 int find(const opendrop_config *config) {
@@ -86,6 +111,15 @@ int find(const opendrop_config *config) {
     int err;
     if (err = opendrop_browser_new(&browser, config->interface)) {
         printf("Failed to create browser: %s\n", opendrop_browser_strerror(opendrop_browser_init_errno(err)));
+        return 1;
+    }
+
+    opendrop_browser_set_state_callback(browser, browser_status, NULL);
+    opendrop_browser_set_add_service_callback(browser, browser_add_service, NULL);
+    opendrop_browser_set_remove_service_callback(browser, browser_remove_service, NULL);
+
+    if (opendrop_browser_start(browser)) {
+        printf("Failed to start browser: %s\n", opendrop_browser_strerror(opendrop_browser_errno(browser)));
         return 1;
     }
 
@@ -98,7 +132,7 @@ int find(const opendrop_config *config) {
     }
     sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
-    printf("Ctrl+C! Shutdown successful\n");
+    printf("\nSIGINT! Shutdown successful\n");
 
     return 0;
 }
@@ -132,7 +166,7 @@ int main(int argc, char **argv) {
     fread(cert_data, sizeof(unsigned char), file_size, root_cert);
     fclose(root_cert);
 
-    if (opendrop_config_new(&(args.config), cert_data, file_size)) {
+    if (opendrop_config_new(&args.config, cert_data, file_size)) {
         printf("Failed to create config\n");
         return 1;
     }
@@ -141,9 +175,10 @@ int main(int argc, char **argv) {
     argp_parse(&argp, argc, argv, 0, 0, &args);
 
     // Set up signals and pausing
-    struct sigaction act;
+    struct sigaction act = {0};
     act.sa_handler = int_handler;
     act.sa_flags = 0;
+    sigemptyset(&act.sa_mask);
     sigaction(SIGINT, &act, NULL);
 
     sigemptyset(&mask);

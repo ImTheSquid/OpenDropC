@@ -57,13 +57,9 @@ int opendrop_browser_new(opendrop_browser **browser, const char *interface);
 // - browser: OpenDrop browser
 void opendrop_browser_free(opendrop_browser *browser);
 
-// Starts OpenDrop browser
+// Starts OpenDrop browser, uses callbacks set by others
 // Args:
 // - browser: Initialized browser
-// - service_add: Callback for when a service is added
-// - service_remove: Callback for when a service is removed
-// - browser_status: Callback for change of browser status
-// - callback_userdata: Data to be passed to all callbacks
 // Returns 0 on success, >0 on error
 int opendrop_browser_start(opendrop_browser *browser);
 
