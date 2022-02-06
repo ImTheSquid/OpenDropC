@@ -12,6 +12,17 @@ typedef struct opendrop_client_data_s {
     size_t data_len;
 } opendrop_client_data;
 
+typedef struct opendrop_client_file_data_s {
+    char *name;
+    char *type;
+    char *bom_path;
+    bool is_dir;
+
+    // These values may be NULL/0 for ASK requests
+    unsigned char *data;
+    size_t data_len;
+} opendrop_client_file_data;
+
 // Initializes OpenDrop client
 // Args:
 // - client: OpenDrop client
@@ -41,7 +52,7 @@ int opendrop_client_discover(opendrop_client *client, char **receiver_name);
 // - is_url: If set to true, only the first item in data_arr will be sent (as a URL)
 // - icon: Optional icon to send to AirDrop system, must be image in JPEG2000 form
 // Returns: 0 on success, >0 on error
-int opendrop_client_ask(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len, bool is_url, const opendrop_client_data *icon);
+int opendrop_client_ask(opendrop_client *client, const opendrop_client_file_data **data_arr, size_t data_arr_len, bool is_url, const opendrop_client_data *icon);
 
 // Attempts to send file, DO NOT USE TO SEND A URL
 // Args:
@@ -49,4 +60,4 @@ int opendrop_client_ask(const opendrop_client *client, const opendrop_client_dat
 // - data_arr: An array of pointers to client data that will be sent
 // - data_arr_len: Number of datas to be sent
 // Returns: 0 on success, >0 on error
-int opendrop_client_send(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len);
+int opendrop_client_send(const opendrop_client *client, const opendrop_client_file_data **data_arr, size_t data_arr_len);

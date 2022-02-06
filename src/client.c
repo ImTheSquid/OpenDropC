@@ -14,6 +14,9 @@ struct opendrop_client_s {
     size_t latest_response_len;
 
     const opendrop_config *config;
+
+    int last_error;
+    int last_curl_error;
 };
 
 size_t curl_refs = 0;
@@ -113,7 +116,7 @@ int opendrop_client_discover(opendrop_client *client, char **receiver_name) {
     plist_t root = plist_new_dict();
 
     if (client->config->record_data) {
-        plist_dict_set_item(root, "SenderRecordData", client->config->record_data);
+        plist_dict_set_item(root, "SenderRecordData", plist_new_string(client->config->record_data));
     }
 
     char *buf;
@@ -154,24 +157,95 @@ int opendrop_client_discover(opendrop_client *client, char **receiver_name) {
 DONE:
     curl_slist_free_all(headers);
     plist_free(root);
-    if (receiver_comp) {
-        plist_free(receiver_comp);
-    }
     plist_free(response);
     return ret;
 }
 
-int opendrop_client_ask(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len, bool is_url, const opendrop_client_data *icon) {
+int opendrop_client_ask(opendrop_client *client, const opendrop_client_file_data **data_arr, size_t data_arr_len, bool is_url, const opendrop_client_data *icon) {
+    plist_t *root = plist_new_dict();
+
+    // Setup body
+    plist_dict_set_item(root, "SenderComputerName", plist_new_string(client->config->computer_name));
+    plist_dict_set_item(root, "BundleID", plist_new_string("com.apple.finder"));
+    plist_dict_set_item(root, "SenderModelName", plist_new_string(client->config->computer_model));
+    plist_dict_set_item(root, "SenderID", plist_new_string(client->config->service_id));
+    plist_dict_set_item(root, "ConvertMediaFormats", plist_new_bool(false));
+
+    if (client->config->record_data) {
+        plist_dict_set_item(root, "SenderRecordData", plist_new_string(client->config->record_data));
+    }
+
+    if (icon) {
+        plist_dict_set_item(root, "FileIcon", plist_new_data(icon->data, icon->data_len));
+    }
+
+    plist_t *files = plist_new_array();
+    plist_dict_set_item(root, "Files", files);
+    
+    if (is_url) {
+        // Might have to change this to data if it doesn't work correctly
+        char *url = (char*) malloc(sizeof(char) * data_arr[0]->data_len);
+        if (!url) {
+            plist_free(root);
+            client->last_error = 1;
+            client->last_curl_error = 0;
+            return 1;
+        }
+
+        url[data_arr[0]->data_len] = 0;
+        strncpy(url, data_arr[0]->data, data_arr[0]->data_len);
+        plist_array_append_item(files, plist_new_string(data_arr[0]->data));
+
+        free(url);
+    } else {
+        for (size_t i = 0; i < data_arr_len; i++) {
+            plist_t *file = plist_new_dict();
+            
+            plist_dict_set_item(file, "FileName", plist_new_string(data_arr[i]->name));
+            plist_dict_set_item(file, "FileType", plist_new_string(data_arr[i]->type));
+            plist_dict_set_item(file, "FileBomPath", plist_new_string(data_arr[i]->bom_path));
+            plist_dict_set_item(file, "FileIsDirectory", plist_new_bool(data_arr[i]->is_dir));
+            plist_dict_set_item(file, "ConvertMediaFormats", plist_new_bool(false));
+            
+            plist_array_append_item(files, file);
+        }
+    }
+
+    int ret = 0;
+
+    char *buf;
+    uint32_t len;
+    // Convert PLIST to binary format and null-terminate
+    if (plist_to_bin(root, &buf, &len) || !(buf = realloc(buf, len + 1)) || curl_easy_setopt(client->curl, CURLOPT_POSTFIELDS, buf)) {
+        client->last_error = 2;
+        goto DONE;
+    }
+
     struct curl_slist *headers = generate_default_headers_list();
     headers = curl_slist_append(headers, "ContentType: application/octet-stream");
 
+    if (curl_easy_setopt(client->curl, CURLOPT_HTTPHEADER, headers)) {
+        ret = 1;
+        client->last_error = 2;
+        client->last_curl_error = 0;
+        goto DONE;
+    }
 
+    int code;
+    if (code = curl_easy_perform(client->curl)) {
+        ret = 1;
+        client->last_error = 0;
+        client->last_curl_error = code;
+        goto DONE;
+    }
 
+DONE:
     curl_slist_free_all(headers);
-    return 0;
+    plist_free(root);
+    return ret;
 }
 
-int opendrop_client_send(const opendrop_client *client, const opendrop_client_data **data_arr, size_t data_arr_len) {
+int opendrop_client_send(const opendrop_client *client, const opendrop_client_file_data **data_arr, size_t data_arr_len) {
     struct curl_slist *headers = generate_default_headers_list();
     headers = curl_slist_append(headers, "ContentType: application/x-cpio");
 
